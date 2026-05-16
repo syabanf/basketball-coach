@@ -13,13 +13,13 @@ export const team = {
 
 export const coach = {
   id: 'user_01',
-  name: 'Coach Alex',
+  name: 'Coach Kevin',
   role: 'Head Coach',
   avatar: null
 };
 
 export const staff = [
-  { id: 'st_01', name: 'Coach Alex',    role: 'Head Coach',      avatar: null },
+  { id: 'st_01', name: 'Coach Kevin',    role: 'Head Coach',      avatar: null },
   { id: 'st_02', name: 'Rian Saputra',  role: 'Assistant Coach', avatar: null },
   { id: 'st_03', name: 'Dewi Pratiwi',  role: 'Performance',     avatar: null },
   { id: 'st_04', name: 'Hendro Lim',    role: 'Video Analyst',   avatar: null }

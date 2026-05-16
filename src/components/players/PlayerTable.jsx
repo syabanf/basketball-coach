@@ -2,9 +2,10 @@ import { Avatar } from '../ui/Avatar.jsx';
 import { StatusBadge } from '../ui/Badge.jsx';
 import { Card, CardHeader } from '../ui/Card.jsx';
 import { Icon } from '../ui/Icon.jsx';
+import { Popover, MenuItem, MenuDivider } from '../ui/Popover.jsx';
 import { cn } from '../../lib/cn.js';
 
-export function PlayerTable({ players, selectedId, onSelect, onAdd, onViewAll }) {
+export function PlayerTable({ players, selectedId, onSelect, onAdd, onEdit, onDelete, onViewAll }) {
   return (
     <Card padded={false}>
       <CardHeader
@@ -31,6 +32,7 @@ export function PlayerTable({ players, selectedId, onSelect, onAdd, onViewAll })
               <th className="px-3 py-2 text-left font-semibold">Height</th>
               <th className="px-3 py-2 text-left font-semibold">OVR</th>
               <th className="px-5 py-2 text-left font-semibold">Status</th>
+              <th className="px-3 py-2 text-right font-semibold w-12"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
@@ -63,6 +65,19 @@ export function PlayerTable({ players, selectedId, onSelect, onAdd, onViewAll })
                     <span className="text-brand-600 font-bold text-sm">{p.overall}</span>
                   </td>
                   <td className="px-5 py-3"><StatusBadge status={p.status} /></td>
+                  <td className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                    <Popover content={(close) => (
+                      <div>
+                        <MenuItem icon={Icon.Pencil} onClick={() => { onEdit?.(p); close(); }}>Edit player</MenuItem>
+                        <MenuDivider />
+                        <MenuItem icon={Icon.Trash} danger onClick={() => { onDelete?.(p); close(); }}>Remove</MenuItem>
+                      </div>
+                    )}>
+                      <button className="h-8 w-8 grid place-items-center rounded-lg text-ink-muted hover:bg-white">
+                        <Icon.More size={16} />
+                      </button>
+                    </Popover>
+                  </td>
                 </tr>
               );
             })}

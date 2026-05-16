@@ -49,7 +49,7 @@ export function SettingsPage() {
           <div className="space-y-3">
             <Field label="Name"  defaultValue={coach.name} />
             <Field label="Role"  defaultValue={coach.role} />
-            <Field label="Email" defaultValue="coach.alex@4thelab.id" />
+            <Field label="Email" defaultValue="coach.kevin@4thelab.id" />
           </div>
           <div className="mt-4 text-right">
             <Button onClick={onSave('Profile')}>Update Profile</Button>

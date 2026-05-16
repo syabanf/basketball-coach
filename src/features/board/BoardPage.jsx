@@ -3,16 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { Tabs } from '../../components/ui/Tabs.jsx';
 import { Button, IconButton } from '../../components/ui/Button.jsx';
 import { Icon } from '../../components/ui/Icon.jsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.jsx';
 import { BoardToolbar } from '../../components/board/BoardToolbar.jsx';
 import { TacticalCanvas } from '../../components/board/TacticalCanvas.jsx';
+import { Court3DView } from '../../components/board/Court3DView.jsx';
 import { PlayLibrary, PlayLibraryHorizontal } from '../../components/plays/PlayLibrary.jsx';
 import { PlayMetadata } from '../../components/plays/PlayMetadata.jsx';
+import { PlayFormModal } from '../../components/plays/PlayFormModal.jsx';
 import { PlayerTable } from '../../components/players/PlayerTable.jsx';
 import { PlayerDetailCard } from '../../components/players/PlayerDetailCard.jsx';
+import { PlayerFormModal } from '../../components/players/PlayerFormModal.jsx';
 import { usePlayStore } from '../../stores/play.store.js';
 import { useBoardStore } from '../../stores/board.store.js';
 import { usePlayerStore } from '../../stores/player.store.js';
 import { toast } from '../../stores/toast.store.js';
+
+const DEFAULT_SCENE = () => ({
+  players: [
+    { id: 't1', label: '1', x: 500, y: 760, hasBall: true },
+    { id: 't2', label: '2', x: 820, y: 540 },
+    { id: 't3', label: '3', x: 180, y: 540 },
+    { id: 't4', label: '4', x: 380, y: 360 },
+    { id: 't5', label: '5', x: 620, y: 360 }
+  ],
+  drawings: []
+});
 
 export function BoardPage() {
   const navigate = useNavigate();
@@ -35,22 +50,22 @@ export function BoardPage() {
   const selectedPlayerId = usePlayerStore((s) => s.selectedPlayerId);
   const setSelectedPlayer = usePlayerStore((s) => s.setSelectedPlayer);
   const addPlayer = usePlayerStore((s) => s.addPlayer);
+  const editPlayer = usePlayerStore((s) => s.editPlayer);
+  const removePlayer = usePlayerStore((s) => s.removePlayer);
   const selectedPlayer = players.find((p) => p.id === selectedPlayerId);
 
-  const [saving, setSaving] = useState(false);
-  const [fitNonce, setFitNonce] = useState(0); // bump to remount canvas (reset transient state)
+  const nextJersey = (players.reduce((a, p) => Math.max(a, p.jersey || 0), 0) || 0) + 1;
+
+  const [playForm, setPlayForm] = useState({ open: false, play: null });
+  const [playerForm, setPlayerForm] = useState({ open: false, player: null });
+  const [confirmPlayDelete, setConfirmPlayDelete] = useState(null);
+  const [confirmPlayerDelete, setConfirmPlayerDelete] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [fitNonce, setFitNonce] = useState(0);
 
   const handleSceneChange = (nextScene) => {
     pushHistory(activePlay.scene);
     upsertPlay({ ...activePlay, scene: nextScene });
-  };
-
-  const handleSave = () => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      toast.success(`Saved "${activePlay.title}"`);
-    }, 500);
   };
 
   const handleShare = async () => {
@@ -63,72 +78,47 @@ export function BoardPage() {
     }
   };
 
-  const handleNewPlay = () => {
-    const title = window.prompt('New play title:', 'Untitled Play');
-    if (title === null) return;
-    const newPlay = {
+  // ── Play CRUD ──────────────────────────────────────────────
+  const openNewPlay  = () => setPlayForm({ open: true, play: null });
+  const openEditPlay = (p) => setPlayForm({ open: true, play: p });
+
+  const submitPlayForm = (payload) => {
+    if (playForm.play) {
+      upsertPlay({ ...playForm.play, ...payload });
+    } else {
+      const id = `play_${Math.random().toString(36).slice(2, 8)}`;
+      const newPlay = { id, ...payload, scene: DEFAULT_SCENE() };
+      upsertPlay(newPlay);
+      setActivePlay(id);
+    }
+    setPlayForm({ open: false, play: null });
+  };
+
+  const duplicatePlay = (p) => {
+    const dup = {
+      ...p,
       id: `play_${Math.random().toString(36).slice(2, 8)}`,
-      title: title.trim() || 'Untitled Play',
-      category: 'Offense',
-      tags: ['Offense'],
-      description: 'New play draft.',
-      scene: {
-        players: [
-          { id: 't1', label: '1', x: 500, y: 760, hasBall: true },
-          { id: 't2', label: '2', x: 820, y: 540 },
-          { id: 't3', label: '3', x: 180, y: 540 },
-          { id: 't4', label: '4', x: 380, y: 360 },
-          { id: 't5', label: '5', x: 620, y: 360 }
-        ],
-        drawings: []
-      }
+      title: `${p.title} (Copy)`
     };
-    upsertPlay(newPlay);
-    setActivePlay(newPlay.id);
-    toast.success(`Created "${newPlay.title}"`);
+    upsertPlay(dup);
+    setActivePlay(dup.id);
   };
 
-  const handleRename = (play) => {
-    const next = window.prompt('Rename play:', play.title);
-    if (!next || next.trim() === '' || next === play.title) return;
-    upsertPlay({ ...play, title: next.trim() });
-    toast.success(`Renamed to "${next.trim()}"`);
+  const handlePlayAction = (action, p) => {
+    if (action === 'rename')    return openEditPlay(p);
+    if (action === 'share')     return handleShare();
+    if (action === 'duplicate') return duplicatePlay(p);
+    if (action === 'delete')    return setConfirmPlayDelete(p);
   };
 
-  const handlePlayAction = (action, play) => {
-    if (action === 'rename') return handleRename(play);
-    if (action === 'share')  return handleShare();
-    if (action === 'duplicate') {
-      const dup = {
-        ...play,
-        id: `play_${Math.random().toString(36).slice(2, 8)}`,
-        title: `${play.title} (Copy)`
-      };
-      upsertPlay(dup);
-      setActivePlay(dup.id);
-      toast.success(`Duplicated "${play.title}"`);
-      return;
-    }
-    if (action === 'delete') {
-      if (window.confirm(`Delete "${play.title}"?`)) {
-        deletePlay(play.id);
-        toast.show(`Deleted "${play.title}"`);
-      }
-    }
-  };
+  // ── Player CRUD ────────────────────────────────────────────
+  const openAddPlayer  = () => setPlayerForm({ open: true, player: null });
+  const openEditPlayer = (p) => setPlayerForm({ open: true, player: p });
 
-  const handleAddPlayer = () => {
-    const name = window.prompt('New player name:');
-    if (!name || !name.trim()) return;
-    const position = (window.prompt('Position (PG/SG/SF/PF/C):', 'PG') || 'PG').toUpperCase();
-    const p = addPlayer({ name: name.trim(), position });
-    toast.success(`Added ${p.name} as #${p.jersey}`);
-  };
-
-  const handleFitToScreen = () => {
-    setFitNonce((n) => n + 1);
-    selectObject(null);
-    toast.info('Reset to fit');
+  const submitPlayerForm = (payload) => {
+    if (playerForm.player) editPlayer(playerForm.player.id, payload);
+    else                   addPlayer(payload);
+    setPlayerForm({ open: false, player: null });
   };
 
   return (
@@ -140,13 +130,13 @@ export function BoardPage() {
           <p className="text-sm text-ink-muted mt-1">Design, visualize, and perfect your game plan.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" leftIcon={<Icon.Save size={16} />} onClick={handleSave} className="hidden sm:inline-flex">
-            {saving ? 'Saving…' : 'Save Play'}
+          <Button variant="secondary" leftIcon={<Icon.Save size={16} />} onClick={() => openEditPlay(activePlay)} className="hidden sm:inline-flex">
+            Edit Play
           </Button>
           <Button variant="secondary" leftIcon={<Icon.Share size={16} />} onClick={handleShare} className="hidden sm:inline-flex">
             Share Play
           </Button>
-          <Button variant="primary" leftIcon={<Icon.Plus size={16} />} onClick={handleNewPlay}>
+          <Button variant="primary" leftIcon={<Icon.Plus size={16} />} onClick={openNewPlay}>
             New Play
           </Button>
         </div>
@@ -165,19 +155,15 @@ export function BoardPage() {
           />
         </div>
 
-        <div className="px-4 sm:px-5">
-          <BoardToolbar
-            onUndo={() => undo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
-            onRedo={() => redo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
-            onClear={() => {
-              if (activePlay.scene.drawings.length === 0) return;
-              if (window.confirm('Clear all drawings on this play?')) {
-                handleSceneChange({ ...activePlay.scene, drawings: [] });
-                toast.show('Drawings cleared');
-              }
-            }}
-          />
-        </div>
+        {view === 'court' && (
+          <div className="px-4 sm:px-5">
+            <BoardToolbar
+              onUndo={() => undo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
+              onRedo={() => redo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
+              onClear={() => activePlay.scene.drawings.length > 0 && setConfirmClear(true)}
+            />
+          </div>
+        )}
 
         {view === 'court' ? (
           <div className="p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5">
@@ -186,7 +172,7 @@ export function BoardPage() {
                 plays={plays}
                 activeId={activePlayId}
                 onSelect={setActivePlay}
-                onNew={handleNewPlay}
+                onNew={openNewPlay}
                 onViewAll={() => navigate('/plays')}
                 onPlayAction={handlePlayAction}
               />
@@ -199,10 +185,9 @@ export function BoardPage() {
                 selectedObjectId={selectedObjectId}
                 onSelect={selectObject}
               />
-              {/* Floating canvas controls */}
               <div className="absolute left-3 bottom-3 sm:left-4 sm:bottom-4">
                 <button
-                  onClick={handleFitToScreen}
+                  onClick={() => { setFitNonce((n) => n + 1); selectObject(null); }}
                   className="inline-flex items-center gap-2 px-3 h-9 bg-white/95 border border-line rounded-xl text-sm font-semibold shadow-card hover:bg-white"
                 >
                   <Icon.Maximize size={16} /> Fit to Screen
@@ -219,17 +204,21 @@ export function BoardPage() {
             </div>
           </div>
         ) : (
-          <div className="aspect-[16/9] grid place-items-center bg-navy-900 text-white">
-            <div className="text-center px-8">
-              <Icon.Board size={42} />
-              <h3 className="text-xl font-bold mt-3">3D View — Coming Soon</h3>
-              <p className="text-sm text-navy-200 mt-1 max-w-md">
-                A 3D camera perspective for visualizing player rotations and screens. Available in the next release.
-              </p>
-              <Button variant="primary" className="mt-4" onClick={() => setView('court')}>
-                Back to Court Board
+          <div className="p-4 sm:p-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-ink">3D Preview</h3>
+                <p className="text-xs text-ink-muted">Read-only camera view. Switch to Court Board to edit player positions.</p>
+              </div>
+              <Button size="sm" variant="secondary" onClick={() => setView('court')}>
+                Edit in 2D →
               </Button>
             </div>
+            <Court3DView
+              scene={activePlay.scene}
+              selectedObjectId={selectedObjectId}
+              onSelect={selectObject}
+            />
           </div>
         )}
       </div>
@@ -240,12 +229,12 @@ export function BoardPage() {
           plays={plays}
           activeId={activePlayId}
           onSelect={setActivePlay}
-          onNew={handleNewPlay}
+          onNew={openNewPlay}
         />
       </div>
 
-      {/* Play metadata strip */}
-      <PlayMetadata play={activePlay} onRename={handleRename} />
+      {/* Play metadata strip — pencil opens edit modal */}
+      <PlayMetadata play={activePlay} onRename={openEditPlay} />
 
       {/* Player list + detail */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-5">
@@ -253,11 +242,57 @@ export function BoardPage() {
           players={players}
           selectedId={selectedPlayerId}
           onSelect={setSelectedPlayer}
-          onAdd={handleAddPlayer}
+          onAdd={openAddPlayer}
+          onEdit={openEditPlayer}
+          onDelete={(p) => setConfirmPlayerDelete(p)}
           onViewAll={() => navigate('/players')}
         />
         <PlayerDetailCard player={selectedPlayer} />
       </div>
+
+      {/* Modals */}
+      <PlayFormModal
+        open={playForm.open}
+        onClose={() => setPlayForm({ open: false, play: null })}
+        play={playForm.play}
+        onSubmit={submitPlayForm}
+      />
+      <PlayerFormModal
+        open={playerForm.open}
+        onClose={() => setPlayerForm({ open: false, player: null })}
+        player={playerForm.player}
+        nextJersey={nextJersey}
+        onSubmit={submitPlayerForm}
+      />
+      <ConfirmDialog
+        open={Boolean(confirmPlayDelete)}
+        onClose={() => setConfirmPlayDelete(null)}
+        title="Delete play?"
+        description={confirmPlayDelete ? `"${confirmPlayDelete.title}" will be removed permanently.` : ''}
+        confirmLabel="Delete"
+        tone="danger"
+        onConfirm={() => deletePlay(confirmPlayDelete.id)}
+      />
+      <ConfirmDialog
+        open={Boolean(confirmPlayerDelete)}
+        onClose={() => setConfirmPlayerDelete(null)}
+        title="Remove player?"
+        description={confirmPlayerDelete
+          ? `"${confirmPlayerDelete.name}" (#${confirmPlayerDelete.jersey}) will be removed from the roster.`
+          : ''}
+        confirmLabel="Remove"
+        tone="danger"
+        onConfirm={() => removePlayer(confirmPlayerDelete.id)}
+      />
+      <ConfirmDialog
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        title="Clear all drawings?"
+        description="All arrows, circles, rectangles, and text on this play will be removed. Players stay where they are."
+        confirmLabel="Clear"
+        tone="danger"
+        onConfirm={() => handleSceneChange({ ...activePlay.scene, drawings: [] })}
+      />
     </div>
   );
 }
