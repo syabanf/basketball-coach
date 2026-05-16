@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --brand: #EE3C3B;
+  --brand-deep: #D62524;
+  --navy: #242424;
+  --navy-deep: #111111;
+}
+
+html, body, #root {
+  height: 100%;
+  background: theme('colors.surface.alt');
+}
+
+body {
+  @apply font-sans text-ink antialiased;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbars */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: theme('colors.navy.200');
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: theme('colors.navy.300'); background-clip: padding-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Focus ring */
+:focus-visible {
+  outline: none;
+  box-shadow: theme('boxShadow.focus');
+  border-radius: 8px;
+}
+
+/* Safe-area padding helpers for mobile PWA */
+.safe-pb { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+.safe-pt { padding-top: max(env(safe-area-inset-top), 0.5rem); }
+
+/* Hide scrollbar utility (for horizontal scrollers) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Tactical board canvas: prevent unwanted touch gestures */
+.board-svg { touch-action: none; user-select: none; }
