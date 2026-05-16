@@ -5,14 +5,27 @@ import { Badge, StatusBadge } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Icon } from '../../components/ui/Icon.jsx';
 import { Popover, MenuItem, MenuDivider } from '../../components/ui/Popover.jsx';
+import { KPI, DistributionBar } from '../../components/ui/InsightWidgets.jsx';
 import { staff, team } from '../../data/team.js';
 import { usePlayerStore } from '../../stores/player.store.js';
+import {
+  positionBreakdown, statusBreakdown, teamAverages, POSITIONS, avg
+} from '../../lib/team-insights.js';
 
 export function TeamPage() {
   const navigate = useNavigate();
   const players = usePlayerStore((s) => s.players);
   const starters = players.filter((p) => p.status === 'starter');
   const others = players.filter((p) => p.status !== 'starter');
+
+  // Derived metrics
+  const positions = positionBreakdown(players);
+  const status = statusBreakdown(players);
+  const strengths = teamAverages(players).sort((a, b) => b.value - a.value);
+  const avgHeight = avg(players, (p) => p.height);
+  const avgAge    = avg(players, (p) => p.age);
+  const avgOvr    = avg(players, (p) => p.overall);
+  const tallest   = [...players].sort((a, b) => b.height - a.height)[0];
 
   return (
     <div className="space-y-5">
@@ -24,6 +37,60 @@ export function TeamPage() {
         <Button leftIcon={<Icon.Settings size={16} />} variant="secondary" onClick={() => navigate('/settings')}>
           Team Settings
         </Button>
+      </div>
+
+      {/* Roster insights */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KPI label="Roster Size"  value={players.length} hint={`${status.starter} · ${status.rotation} · ${status.bench}`} tone="navy" icon={<Icon.Players size={18} />} />
+        <KPI label="Avg OVR"      value={avgOvr}         hint={`Top strength: ${strengths[0]?.label}`} tone="brand" icon={<Icon.Analytics size={18} />} />
+        <KPI label="Avg Height"   value={`${avgHeight} cm`} hint={tallest ? `Tallest: ${tallest.name} (${tallest.height} cm)` : ''} tone="navy" icon={<Icon.Team size={18} />} />
+        <KPI label="Avg Age"      value={`${avgAge} yr`}   hint="across roster" tone="navy" icon={<Icon.Schedule size={18} />} />
+      </div>
+
+      {/* Composition + strengths */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <Card>
+          <CardHeader title="Roster Composition" subtitle="Positions and rotation status" />
+          <div className="space-y-5">
+            <DistributionBar
+              title="By Position"
+              segments={POSITIONS.map((pos) => ({ label: pos, value: positions[pos] }))}
+            />
+            <DistributionBar
+              title="By Rotation Status"
+              segments={[
+                { label: 'Starter',  value: status.starter,  color: '#15803D' },
+                { label: 'Rotation', value: status.rotation, color: '#B45309' },
+                { label: 'Bench',    value: status.bench,    color: '#94A3B8' }
+              ]}
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Team Strengths" subtitle="Averaged attributes across the roster" />
+          <ul className="space-y-2.5">
+            {strengths.map((a) => (
+              <li key={a.key} className="flex items-center gap-3">
+                <span className="text-sm text-ink-muted w-28 shrink-0">{a.label}</span>
+                <div className="flex-1 h-2 rounded-full bg-surface-soft overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600" style={{ width: `${a.value}%` }} />
+                </div>
+                <span className="w-9 text-right text-sm font-bold text-ink tabular-nums">{a.value}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+              <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700">Strongest area</div>
+              <div className="font-semibold text-ink mt-0.5">{strengths[0]?.label}</div>
+            </div>
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3">
+              <div className="text-[10px] uppercase tracking-wider font-bold text-amber-700">Develop next</div>
+              <div className="font-semibold text-ink mt-0.5">{strengths[strengths.length - 1]?.label}</div>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Starting lineup summary — full editor lives at /lineup */}

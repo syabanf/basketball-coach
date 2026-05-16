@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Card } from '../../components/ui/Card.jsx';
+import { useMemo, useState } from 'react';
+import { Card, CardHeader } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Icon } from '../../components/ui/Icon.jsx';
 import { Tabs } from '../../components/ui/Tabs.jsx';
@@ -8,10 +8,12 @@ import { EventFormModal } from '../../components/schedule/EventFormModal.jsx';
 import { CalendarWeek } from '../../components/schedule/CalendarWeek.jsx';
 import { CalendarMonth } from '../../components/schedule/CalendarMonth.jsx';
 import { CalendarAgenda } from '../../components/schedule/CalendarAgenda.jsx';
+import { KPI, Pill } from '../../components/ui/InsightWidgets.jsx';
 import { useScheduleStore } from '../../stores/schedule.store.js';
 import {
-  addDays, addMonths, weekGrid, formatMonthYear, formatWeekRange, toISODate
+  addDays, addMonths, weekGrid, formatMonthYear, formatWeekRange, formatDateLong, toISODate, fromISODate, startOfWeek
 } from '../../lib/calendar.js';
+import { workloadSummary } from '../../lib/team-insights.js';
 
 const VIEWS = [
   { value: 'week',  label: 'Week' },
@@ -66,6 +68,26 @@ export function SchedulePage() {
     rangeLabel = 'Next 60 days';
   }
 
+  // Workload + next match insights for the visible week
+  const visibleWeek = useMemo(() => weekGrid(cursor), [cursor]);
+  const weekStart = visibleWeek[0];
+  const weekEnd = visibleWeek[6];
+  const weekEvents = useMemo(
+    () => events.filter((e) => {
+      const d = fromISODate(e.date);
+      return d >= weekStart && d <= weekEnd;
+    }),
+    [events, weekStart, weekEnd]
+  );
+  const workload = workloadSummary(weekEvents);
+
+  const nextMatch = useMemo(
+    () => [...events]
+      .filter((e) => e.type === 'match' && fromISODate(e.date) >= cursor)
+      .sort((a, b) => a.date.localeCompare(b.date))[0],
+    [events, cursor]
+  );
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -77,6 +99,34 @@ export function SchedulePage() {
           Add Event
         </Button>
       </div>
+
+      {/* Weekly load + next match insights */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KPI label="Training" value={workload.counts.training || 0} hint="sessions this week" tone="brand"  icon={<Icon.Plays size={18} />} />
+        <KPI label="Matches"  value={workload.counts.match || 0}    hint="vs scheduled opponents" tone="success" icon={<Icon.Team size={18} />} />
+        <KPI label="Rest"     value={workload.counts.rest || 0}     hint="recovery days" tone="navy" icon={<Icon.Bell size={18} />} />
+        <KPI label="Load"     value={`${workload.trainingHours}h`}  hint={workload.intensity.label + ' week'} tone={workload.intensity.tone === 'danger' ? 'danger' : workload.intensity.tone === 'brand' ? 'brand' : 'success'} icon={<Icon.Schedule size={18} />} />
+      </div>
+
+      {nextMatch && (
+        <Card className="bg-gradient-to-br from-navy-700 to-navy-900 border-0 text-white">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-14 w-14 rounded-2xl bg-white/15 grid place-items-center backdrop-blur shrink-0">
+                <Icon.Team size={28} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase tracking-wider font-bold text-white/70">Next Match</div>
+                <div className="text-xl font-bold mt-0.5 truncate">{nextMatch.title}</div>
+                <div className="text-sm text-white/80 mt-0.5">
+                  {formatDateLong(fromISODate(nextMatch.date))} · {nextMatch.time}
+                </div>
+              </div>
+            </div>
+            <Pill tone="warning">Match Day</Pill>
+          </div>
+        </Card>
+      )}
 
       <Card padded={false}>
         {/* Toolbar */}
