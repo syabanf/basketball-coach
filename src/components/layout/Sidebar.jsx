@@ -1,9 +1,10 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Icon } from '../ui/Icon.jsx';
 import { Badge } from '../ui/Badge.jsx';
 import { Popover, MenuItem } from '../ui/Popover.jsx';
 import { organization, team } from '../../data/team.js';
 import { toast } from '../../stores/toast.store.js';
+import { useAuthStore } from '../../stores/auth.store.js';
 import { cn } from '../../lib/cn.js';
 
 const NAV = [
@@ -19,6 +20,17 @@ const NAV = [
 ];
 
 export function Sidebar() {
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = () => {
+    const name = user?.name?.split(' ')[0] || 'Coach';
+    logout();
+    toast.show(`Signed out — see you next time, ${name}.`);
+    navigate('/login', { replace: true });
+  };
+
   return (
     <aside className="hidden lg:flex flex-col w-[260px] shrink-0 bg-navy-900 text-white sticky top-0 h-screen">
       <div className="px-5 pt-6 pb-5">
@@ -93,7 +105,7 @@ export function Sidebar() {
             <Icon.Help size={14} /> Help
           </button>
           <button
-            onClick={() => toast.show('Logged out')}
+            onClick={handleLogout}
             className="flex items-center justify-center gap-2 text-xs text-navy-100 hover:text-white py-2 rounded-lg hover:bg-white/5"
           >
             <Icon.Logout size={14} /> Logout

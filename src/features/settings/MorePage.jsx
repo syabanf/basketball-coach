@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/Card.jsx';
 import { Icon } from '../../components/ui/Icon.jsx';
 import { Avatar } from '../../components/ui/Avatar.jsx';
 import { coach, team } from '../../data/team.js';
 import { toast } from '../../stores/toast.store.js';
+import { useAuthStore } from '../../stores/auth.store.js';
 
 const LINKS = [
   { to: '/dashboard', label: 'Dashboard', icon: Icon.Analytics },
@@ -14,14 +15,25 @@ const LINKS = [
 ];
 
 export function MorePage() {
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user) || coach;
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = () => {
+    const name = user?.name?.split(' ')[0] || 'Coach';
+    logout();
+    toast.show(`Signed out — see you next time, ${name}.`);
+    navigate('/login', { replace: true });
+  };
+
   return (
     <div className="space-y-5">
       <Card>
         <div className="flex items-center gap-3">
-          <Avatar name={coach.name} size="lg" />
+          <Avatar name={user.name} size="lg" />
           <div className="flex-1">
-            <div className="font-bold text-ink">{coach.name}</div>
-            <div className="text-sm text-ink-muted">{coach.role} · {team.name}</div>
+            <div className="font-bold text-ink">{user.name}</div>
+            <div className="text-sm text-ink-muted">{user.role} · {user.team || team.name}</div>
           </div>
         </div>
       </Card>
@@ -57,13 +69,13 @@ export function MorePage() {
           </li>
           <li>
             <button
-              onClick={() => toast.show('Logged out')}
+              onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 active:bg-surface-soft"
             >
               <span className="h-9 w-9 grid place-items-center rounded-xl bg-red-50">
                 <Icon.Logout size={18} />
               </span>
-              <span className="flex-1 font-semibold">Logout</span>
+              <span className="flex-1 font-semibold">Sign out</span>
             </button>
           </li>
         </ul>

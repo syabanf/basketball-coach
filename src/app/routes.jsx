@@ -1,5 +1,7 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell.jsx';
+import { RequireAuth } from '../components/auth/RequireAuth.jsx';
+import { LoginPage } from '../features/auth/LoginPage.jsx';
 import { BoardPage } from '../features/board/BoardPage.jsx';
 import { DashboardPage } from '../features/dashboard/DashboardPage.jsx';
 import { PlaysPage } from '../features/plays/PlaysPage.jsx';
@@ -16,21 +18,31 @@ import { MorePage } from '../features/settings/MorePage.jsx';
 export function AppRoutes() {
   return (
     <Routes>
-      <Route element={<AppShell />}>
+      {/* Public */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Protected */}
+      <Route
+        element={
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        }
+      >
         <Route path="/" element={<Navigate to="/board" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/board"     element={<BoardPage />} />
-        <Route path="/plays"     element={<PlaysPage />} />
-        <Route path="/players"   element={<PlayersPage />} />
-        <Route path="/team"      element={<TeamPage />} />
-        <Route path="/lineup"    element={<LineupPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
-        <Route path="/schedule"  element={<SchedulePage />} />
+        <Route path="/dashboard"   element={<DashboardPage />} />
+        <Route path="/board"       element={<BoardPage />} />
+        <Route path="/plays"       element={<PlaysPage />} />
+        <Route path="/players"     element={<PlayersPage />} />
+        <Route path="/team"        element={<TeamPage />} />
+        <Route path="/lineup"      element={<LineupPage />} />
+        <Route path="/analytics"   element={<AnalyticsPage />} />
+        <Route path="/schedule"    element={<SchedulePage />} />
         <Route path="/library"     element={<LibraryPage />} />
         <Route path="/library/:id" element={<LibraryDetailPage />} />
-        <Route path="/settings"  element={<SettingsPage />} />
-        <Route path="/more"      element={<MorePage />} />
-        <Route path="*" element={<Navigate to="/board" replace />} />
+        <Route path="/settings"    element={<SettingsPage />} />
+        <Route path="/more"        element={<MorePage />} />
+        <Route path="*"            element={<Navigate to="/board" replace />} />
       </Route>
     </Routes>
   );

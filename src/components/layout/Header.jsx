@@ -5,6 +5,7 @@ import { Icon } from '../ui/Icon.jsx';
 import { Popover, MenuItem, MenuDivider } from '../ui/Popover.jsx';
 import { coach, organization, notifications } from '../../data/team.js';
 import { toast } from '../../stores/toast.store.js';
+import { useAuthStore } from '../../stores/auth.store.js';
 import { cn } from '../../lib/cn.js';
 
 function NotificationsPanel({ close }) {
@@ -40,13 +41,23 @@ function NotificationsPanel({ close }) {
 
 function ProfileMenu({ close }) {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user) || coach;
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = () => {
+    logout();
+    close();
+    toast.show(`Signed out — see you next time, ${user.name.split(' ')[0]}.`);
+    navigate('/login', { replace: true });
+  };
+
   return (
     <>
       <div className="px-3 py-3 flex items-center gap-3 border-b border-line">
-        <Avatar name={coach.name} ring />
+        <Avatar name={user.name} ring />
         <div className="leading-tight min-w-0">
-          <div className="font-semibold text-ink text-sm truncate">{coach.name}</div>
-          <div className="text-xs text-ink-muted">{coach.role}</div>
+          <div className="font-semibold text-ink text-sm truncate">{user.name}</div>
+          <div className="text-xs text-ink-muted truncate">{user.email || user.role}</div>
         </div>
       </div>
       <MenuItem icon={Icon.Settings} onClick={() => { navigate('/settings'); close(); }}>
@@ -56,18 +67,15 @@ function ProfileMenu({ close }) {
         Help Center
       </MenuItem>
       <MenuDivider />
-      <MenuItem
-        icon={Icon.Logout}
-        danger
-        onClick={() => { toast.show('Logged out'); close(); }}
-      >
-        Logout
+      <MenuItem icon={Icon.Logout} danger onClick={handleLogout}>
+        Sign out
       </MenuItem>
     </>
   );
 }
 
 export function Header() {
+  const user = useAuthStore((s) => s.user) || coach;
   return (
     <header className="hidden lg:flex sticky top-0 z-30 items-center h-16 bg-white border-b border-line px-6">
       <div className="flex-1 max-w-[480px]">
@@ -101,10 +109,10 @@ export function Header() {
 
         <Popover content={(close) => <ProfileMenu close={close} />}>
           <button className="flex items-center gap-2.5 pl-1.5 pr-2.5 h-11 rounded-xl hover:bg-surface-soft transition-colors">
-            <Avatar name={coach.name} size="sm" ring />
+            <Avatar name={user.name} size="sm" ring />
             <div className="leading-tight text-left">
-              <div className="text-sm font-semibold text-ink">{coach.name}</div>
-              <div className="text-[11px] text-ink-muted">{coach.role}</div>
+              <div className="text-sm font-semibold text-ink">{user.name}</div>
+              <div className="text-[11px] text-ink-muted">{user.role}</div>
             </div>
             <Icon.ChevronDown size={14} className="text-ink-muted ml-0.5" />
           </button>
@@ -115,6 +123,7 @@ export function Header() {
 }
 
 export function MobileHeader() {
+  const user = useAuthStore((s) => s.user) || coach;
   return (
     <header className="lg:hidden sticky top-0 z-30 bg-gradient-to-br from-brand-500 to-brand-600 text-white px-4 pt-3 safe-pt pb-4 shadow-card">
       <div className="flex items-center justify-between">
@@ -136,7 +145,7 @@ export function MobileHeader() {
           </Popover>
           <Popover content={(close) => <ProfileMenu close={close} />}>
             <button className="rounded-full">
-              <Avatar name={coach.name} size="md" ring />
+              <Avatar name={user.name} size="md" ring />
             </button>
           </Popover>
         </div>
