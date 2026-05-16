@@ -1,21 +1,23 @@
 import { useState } from 'react';
-import { Card, CardHeader } from '../../components/ui/Card.jsx';
-import { Badge } from '../../components/ui/Badge.jsx';
+import { Card } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Icon } from '../../components/ui/Icon.jsx';
-import { EventFormModal } from '../../components/schedule/EventFormModal.jsx';
+import { Tabs } from '../../components/ui/Tabs.jsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.jsx';
+import { EventFormModal } from '../../components/schedule/EventFormModal.jsx';
+import { CalendarWeek } from '../../components/schedule/CalendarWeek.jsx';
+import { CalendarMonth } from '../../components/schedule/CalendarMonth.jsx';
+import { CalendarAgenda } from '../../components/schedule/CalendarAgenda.jsx';
 import { useScheduleStore } from '../../stores/schedule.store.js';
+import {
+  addDays, addMonths, weekGrid, formatMonthYear, formatWeekRange, toISODate
+} from '../../lib/calendar.js';
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const DAY_DATES = { Mon: '13', Tue: '14', Wed: '15', Thu: '16', Fri: '17', Sat: '18', Sun: '19' };
-
-const TYPE_BADGE = {
-  training: { tone: 'brand',    label: 'Training' },
-  match:    { tone: 'starter',  label: 'Match' },
-  rest:     { tone: 'neutral',  label: 'Rest' },
-  meeting:  { tone: 'rotation', label: 'Meeting' }
-};
+const VIEWS = [
+  { value: 'week',  label: 'Week' },
+  { value: 'month', label: 'Month' },
+  { value: 'agenda', label: 'Agenda' }
+];
 
 export function SchedulePage() {
   const events = useScheduleStore((s) => s.events);
@@ -23,72 +25,112 @@ export function SchedulePage() {
   const updateEvent = useScheduleStore((s) => s.updateEvent);
   const removeEvent = useScheduleStore((s) => s.removeEvent);
 
+  // Default cursor: start of week containing the seed data (mid-May 2024)
+  const [cursor, setCursor] = useState(new Date('2024-05-13T00:00:00'));
+  const [view, setView] = useState('week');
   const [form, setForm] = useState({ open: false, event: null });
   const [confirming, setConfirming] = useState(null);
 
-  const byDay = DAYS.reduce((acc, d) => {
-    acc[d] = events.filter((e) => e.day === d).sort((a, b) => a.time.localeCompare(b.time));
-    return acc;
-  }, {});
-
   const submit = (payload) => {
-    if (form.event) updateEvent(form.event.id, payload);
-    else            addEvent(payload);
+    if (form.event && form.event.id) updateEvent(form.event.id, payload);
+    else                              addEvent(payload);
     setForm({ open: false, event: null });
   };
+
+  const openNew = (date) =>
+    setForm({ open: true, event: { date: date || toISODate(cursor), time: '18:00', type: 'training' } });
+
+  const openEdit = (e) => setForm({ open: true, event: e });
+
+  // Navigation
+  const navPrev = () => setCursor((c) =>
+    view === 'month' ? addMonths(c, -1)
+    : view === 'week' ? addDays(c, -7)
+    : addDays(c, -7)
+  );
+  const navNext = () => setCursor((c) =>
+    view === 'month' ? addMonths(c, 1)
+    : view === 'week' ? addDays(c, 7)
+    : addDays(c, 7)
+  );
+  const navToday = () => setCursor(new Date());
+
+  // Header range label
+  let rangeLabel;
+  if (view === 'month') {
+    rangeLabel = formatMonthYear(cursor);
+  } else if (view === 'week') {
+    const week = weekGrid(cursor);
+    rangeLabel = formatWeekRange(week[0], week[6]);
+  } else {
+    rangeLabel = 'Next 60 days';
+  }
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">Schedule</h1>
-          <p className="text-sm text-ink-muted mt-1">Training plan and match calendar for this week.</p>
+          <p className="text-sm text-ink-muted mt-1">Training plan and match calendar.</p>
         </div>
-        <Button leftIcon={<Icon.Plus size={16} />} onClick={() => setForm({ open: true, event: null })}>
+        <Button leftIcon={<Icon.Plus size={16} />} onClick={() => openNew()}>
           Add Event
         </Button>
       </div>
 
-      <Card>
-        <CardHeader title="This Week" subtitle="May 13 – May 19" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          {DAYS.map((d) => (
-            <div key={d} className="rounded-2xl border border-line p-3 min-h-[140px] flex flex-col">
-              <div className="flex items-baseline justify-between">
-                <div className="text-xs uppercase font-semibold tracking-wider text-ink-muted">{d}</div>
-                <div className="text-lg font-extrabold text-ink">{DAY_DATES[d]}</div>
-              </div>
-              <ul className="mt-2 space-y-1.5 flex-1">
-                {byDay[d].length === 0 && (
-                  <li>
-                    <button
-                      onClick={() => setForm({ open: true, event: { day: d, date: DAY_DATES[d], time: '18:00', type: 'training' } })}
-                      className="w-full h-full min-h-[60px] rounded-lg border border-dashed border-line text-ink-subtle text-xs hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/40 transition-colors"
-                    >
-                      + Add
-                    </button>
-                  </li>
-                )}
-                {byDay[d].map((e) => {
-                  const badge = TYPE_BADGE[e.type] || TYPE_BADGE.training;
-                  return (
-                    <li key={e.id} className="group">
-                      <button
-                        onClick={() => setForm({ open: true, event: e })}
-                        className="w-full text-left rounded-lg bg-surface-alt hover:bg-brand-50/50 p-2 transition-colors"
-                      >
-                        <div className="text-xs font-semibold text-ink leading-tight">{e.title}</div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-[11px] text-ink-muted">{e.time}</span>
-                          <Badge tone={badge.tone}>{badge.label}</Badge>
-                        </div>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+      <Card padded={false}>
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-line">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={navPrev}
+              className="h-9 w-9 grid place-items-center rounded-lg border border-line text-ink-muted hover:bg-surface-soft"
+              aria-label="Previous"
+            >
+              <Icon.ChevronDown size={16} className="rotate-90" />
+            </button>
+            <button
+              onClick={navNext}
+              className="h-9 w-9 grid place-items-center rounded-lg border border-line text-ink-muted hover:bg-surface-soft"
+              aria-label="Next"
+            >
+              <Icon.ChevronDown size={16} className="-rotate-90" />
+            </button>
+            <button
+              onClick={navToday}
+              className="h-9 px-3 rounded-lg border border-line text-sm font-semibold text-ink hover:bg-surface-soft"
+            >
+              Today
+            </button>
+            <div className="ml-2 text-base font-bold text-ink">{rangeLabel}</div>
+          </div>
+          <Tabs value={view} onChange={setView} items={VIEWS} className="!border-b-0" />
+        </div>
+
+        <div className="p-4 sm:p-5">
+          {view === 'week' && (
+            <CalendarWeek
+              events={events}
+              cursor={cursor}
+              onCellClick={openNew}
+              onEventClick={openEdit}
+            />
+          )}
+          {view === 'month' && (
+            <CalendarMonth
+              events={events}
+              cursor={cursor}
+              onCellClick={openNew}
+              onEventClick={openEdit}
+            />
+          )}
+          {view === 'agenda' && (
+            <CalendarAgenda
+              events={events}
+              cursor={cursor}
+              onEventClick={openEdit}
+            />
+          )}
         </div>
       </Card>
 

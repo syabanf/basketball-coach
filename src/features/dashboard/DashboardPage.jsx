@@ -46,6 +46,25 @@ export function DashboardPage() {
               hint="across roster" accent="bg-status-starterBg text-status-starterText" />
       </div>
 
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <button onClick={() => navigate('/board')}     className="rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white p-4 text-left shadow-card hover:shadow-pop transition-shadow">
+          <Icon.Board size={22} />
+          <div className="mt-2 font-bold">Design a play</div>
+          <div className="text-xs text-white/80">Open the Court Board</div>
+        </button>
+        <button onClick={() => navigate('/lineup')}    className="rounded-2xl bg-white border border-line p-4 text-left shadow-card hover:shadow-pop transition-shadow">
+          <Icon.Lineup size={22} className="text-brand-600" />
+          <div className="mt-2 font-bold text-ink">Adjust lineup</div>
+          <div className="text-xs text-ink-muted">Pick the starting five</div>
+        </button>
+        <button onClick={() => navigate('/analytics')} className="rounded-2xl bg-white border border-line p-4 text-left shadow-card hover:shadow-pop transition-shadow">
+          <Icon.Analytics size={22} className="text-brand-600" />
+          <div className="mt-2 font-bold text-ink">Tactic insights</div>
+          <div className="text-xs text-ink-muted">Per-play analytics</div>
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5">
         <Card>
           <div className="flex items-center justify-between mb-4">

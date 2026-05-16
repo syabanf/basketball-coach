@@ -5,6 +5,7 @@ import { DashboardPage } from '../features/dashboard/DashboardPage.jsx';
 import { PlaysPage } from '../features/plays/PlaysPage.jsx';
 import { PlayersPage } from '../features/players/PlayersPage.jsx';
 import { TeamPage } from '../features/team/TeamPage.jsx';
+import { LineupPage } from '../features/lineup/LineupPage.jsx';
 import { AnalyticsPage } from '../features/analytics/AnalyticsPage.jsx';
 import { SchedulePage } from '../features/schedule/SchedulePage.jsx';
 import { LibraryPage } from '../features/library/LibraryPage.jsx';
@@ -21,6 +22,7 @@ export function AppRoutes() {
         <Route path="/plays"     element={<PlaysPage />} />
         <Route path="/players"   element={<PlayersPage />} />
         <Route path="/team"      element={<TeamPage />} />
+        <Route path="/lineup"    element={<LineupPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/schedule"  element={<SchedulePage />} />
         <Route path="/library"   element={<LibraryPage />} />

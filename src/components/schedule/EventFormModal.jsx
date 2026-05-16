@@ -3,16 +3,7 @@ import { Modal } from '../ui/Modal.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Input } from '../ui/Input.jsx';
 import { FormField, Select } from '../ui/Form.jsx';
-
-const DAYS = [
-  { value: 'Mon', date: '13' },
-  { value: 'Tue', date: '14' },
-  { value: 'Wed', date: '15' },
-  { value: 'Thu', date: '16' },
-  { value: 'Fri', date: '17' },
-  { value: 'Sat', date: '18' },
-  { value: 'Sun', date: '19' }
-];
+import { toISODate } from '../../lib/calendar.js';
 
 const TYPES = [
   { value: 'training', label: 'Training' },
@@ -21,27 +12,36 @@ const TYPES = [
   { value: 'meeting',  label: 'Meeting' }
 ];
 
-const blank = { title: '', day: 'Mon', time: '18:00', type: 'training' };
+const blank = () => ({
+  title: '',
+  date: toISODate(new Date()),
+  time: '18:00',
+  type: 'training'
+});
 
 export function EventFormModal({ open, onClose, event, onSubmit, onDelete }) {
-  const isEdit = Boolean(event);
-  const [form, setForm] = useState(blank);
+  const isEdit = Boolean(event && event.id);
+  const [form, setForm] = useState(blank());
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (!open) return;
     setErrors({});
-    setForm(isEdit ? { ...blank, ...event } : blank);
-  }, [open, event, isEdit]);
+    setForm({
+      ...blank(),
+      ...(event || {})
+    });
+  }, [open, event]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.title.trim()) return setErrors({ title: 'Title is required' });
-    const day = DAYS.find((d) => d.value === form.day) || DAYS[0];
+    const errs = {};
+    if (!form.title.trim()) errs.title = 'Title is required';
+    if (!form.date)         errs.date = 'Pick a date';
+    if (Object.keys(errs).length) return setErrors(errs);
     onSubmit?.({
       ...form,
-      title: form.title.trim(),
-      date: day.date
+      title: form.title.trim()
     });
   };
 
@@ -50,7 +50,7 @@ export function EventFormModal({ open, onClose, event, onSubmit, onDelete }) {
       open={open}
       onClose={onClose}
       title={isEdit ? 'Edit Event' : 'Add Event'}
-      description={isEdit ? `Update "${event.title}"` : 'Schedule a new event for this week.'}
+      description={isEdit ? `Update "${event.title}"` : 'Schedule a new event.'}
       size="md"
       footer={
         <>
@@ -74,13 +74,19 @@ export function EventFormModal({ open, onClose, event, onSubmit, onDelete }) {
           />
         </FormField>
         <div className="grid grid-cols-3 gap-3">
-          <FormField label="Day">
-            <Select value={form.day} onChange={(e) => setForm({ ...form, day: e.target.value })}>
-              {DAYS.map((d) => <option key={d.value} value={d.value}>{d.value}</option>)}
-            </Select>
+          <FormField label="Date" error={errors.date}>
+            <Input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+            />
           </FormField>
           <FormField label="Time">
-            <Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
+            <Input
+              type="time"
+              value={form.time}
+              onChange={(e) => setForm({ ...form, time: e.target.value })}
+            />
           </FormField>
           <FormField label="Type">
             <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>

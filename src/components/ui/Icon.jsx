@@ -49,6 +49,15 @@ export const Icon = {
       <path d="M3 20c0-2.5 2-4 5-4M21 20c0-2.5-2-4-5-4M6 20c0-3 3-5 6-5s6 2 6 5" />
     </Base>
   ),
+  Lineup: (p) => (
+    <Base {...p}>
+      <rect x="3" y="4" width="18" height="14" rx="2" />
+      <path d="M3 11h18" />
+      <circle cx="8" cy="14" r="1.4" />
+      <circle cx="16" cy="14" r="1.4" />
+      <circle cx="12" cy="8" r="1.4" />
+    </Base>
+  ),
   Analytics: (p) => (
     <Base {...p}>
       <path d="M4 19V5M4 19h16" />

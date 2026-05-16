@@ -5,14 +5,12 @@ import { Badge, StatusBadge } from '../../components/ui/Badge.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Icon } from '../../components/ui/Icon.jsx';
 import { Popover, MenuItem, MenuDivider } from '../../components/ui/Popover.jsx';
-import { StartingLineup } from '../../components/team/StartingLineup.jsx';
 import { staff, team } from '../../data/team.js';
 import { usePlayerStore } from '../../stores/player.store.js';
 
 export function TeamPage() {
   const navigate = useNavigate();
   const players = usePlayerStore((s) => s.players);
-  const setStartingLineup = usePlayerStore((s) => s.setStartingLineup);
   const starters = players.filter((p) => p.status === 'starter');
   const others = players.filter((p) => p.status !== 'starter');
 
@@ -28,11 +26,37 @@ export function TeamPage() {
         </Button>
       </div>
 
-      {/* NEW: Starting lineup editor */}
-      <StartingLineup
-        players={players}
-        onSave={(byPosition) => setStartingLineup(byPosition)}
-      />
+      {/* Starting lineup summary — full editor lives at /lineup */}
+      <Card>
+        <CardHeader
+          title="Starting Five"
+          subtitle={`${starters.length}/5 positions filled · Avg OVR ${starters.length ? Math.round(starters.reduce((a, p) => a + p.overall, 0) / starters.length) : 0}`}
+          action={
+            <Button size="sm" leftIcon={<Icon.Lineup size={14} />} onClick={() => navigate('/lineup')}>
+              Edit Lineup
+            </Button>
+          }
+        />
+        {starters.length === 0 ? (
+          <div className="text-center py-8 text-sm text-ink-muted">
+            No starters assigned yet.
+            <button onClick={() => navigate('/lineup')} className="ml-1 text-brand-600 font-semibold hover:underline">
+              Set the starting five →
+            </button>
+          </div>
+        ) : (
+          <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {starters.slice(0, 5).map((p) => (
+              <li key={p.id} className="text-center p-3 rounded-2xl border border-line bg-surface-alt">
+                <Avatar name={p.name} size="lg" className="mx-auto" />
+                <div className="mt-2 text-sm font-semibold text-ink truncate">{p.name}</div>
+                <div className="text-xs text-brand-600 font-medium">{p.position}</div>
+                <div className="text-xs text-ink-muted mt-1">OVR {p.overall}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5">
         <Card>

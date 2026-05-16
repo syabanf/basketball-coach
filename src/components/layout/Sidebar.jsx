@@ -11,6 +11,7 @@ const NAV = [
   { to: '/plays',     label: 'Plays',     icon: Icon.Plays },
   { to: '/players',   label: 'Players',   icon: Icon.Players },
   { to: '/team',      label: 'Team',      icon: Icon.Team },
+  { to: '/lineup',    label: 'Lineup',    icon: Icon.Lineup },
   { to: '/analytics', label: 'Analytics', icon: Icon.Analytics },
   { to: '/schedule',  label: 'Schedule',  icon: Icon.Schedule },
   { to: '/library',   label: 'Library',   icon: Icon.Library },
