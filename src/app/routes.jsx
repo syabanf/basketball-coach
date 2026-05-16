@@ -9,6 +9,7 @@ import { LineupPage } from '../features/lineup/LineupPage.jsx';
 import { AnalyticsPage } from '../features/analytics/AnalyticsPage.jsx';
 import { SchedulePage } from '../features/schedule/SchedulePage.jsx';
 import { LibraryPage } from '../features/library/LibraryPage.jsx';
+import { LibraryDetailPage } from '../features/library/LibraryDetailPage.jsx';
 import { SettingsPage } from '../features/settings/SettingsPage.jsx';
 import { MorePage } from '../features/settings/MorePage.jsx';
 
@@ -25,7 +26,8 @@ export function AppRoutes() {
         <Route path="/lineup"    element={<LineupPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/schedule"  element={<SchedulePage />} />
-        <Route path="/library"   element={<LibraryPage />} />
+        <Route path="/library"     element={<LibraryPage />} />
+        <Route path="/library/:id" element={<LibraryDetailPage />} />
         <Route path="/settings"  element={<SettingsPage />} />
         <Route path="/more"      element={<MorePage />} />
         <Route path="*" element={<Navigate to="/board" replace />} />
