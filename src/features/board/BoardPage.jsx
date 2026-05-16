@@ -155,15 +155,13 @@ export function BoardPage() {
           />
         </div>
 
-        {view === 'court' && (
-          <div className="px-4 sm:px-5">
-            <BoardToolbar
-              onUndo={() => undo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
-              onRedo={() => redo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
-              onClear={() => activePlay.scene.drawings.length > 0 && setConfirmClear(true)}
-            />
-          </div>
-        )}
+        <div className="px-4 sm:px-5">
+          <BoardToolbar
+            onUndo={() => undo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
+            onRedo={() => redo(activePlay.scene, (s) => upsertPlay({ ...activePlay, scene: s }))}
+            onClear={() => activePlay.scene.drawings.length > 0 && setConfirmClear(true)}
+          />
+        </div>
 
         {view === 'court' ? (
           <div className="p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5">
@@ -208,7 +206,9 @@ export function BoardPage() {
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold text-ink">3D Preview</h3>
-                <p className="text-xs text-ink-muted">Read-only camera view. Switch to Court Board to edit player positions.</p>
+                <p className="text-xs text-ink-muted">
+                  Drawings work in 3D. Switch to Court Board to move player tokens.
+                </p>
               </div>
               <Button size="sm" variant="secondary" onClick={() => setView('court')}>
                 Edit in 2D →
@@ -216,6 +216,7 @@ export function BoardPage() {
             </div>
             <Court3DView
               scene={activePlay.scene}
+              onChange={handleSceneChange}
               selectedObjectId={selectedObjectId}
               onSelect={selectObject}
             />

@@ -69,8 +69,8 @@ function ProfileMenu({ close }) {
 
 export function Header() {
   return (
-    <header className="hidden lg:flex sticky top-0 z-30 items-center gap-6 h-16 bg-white border-b border-line px-6">
-      <div className="flex-1 max-w-xl">
+    <header className="hidden lg:flex sticky top-0 z-30 items-center h-16 bg-white border-b border-line px-6">
+      <div className="flex-1 max-w-[480px]">
         <Input
           placeholder="Search plays, players, or teams…"
           leftIcon={<Icon.Search size={16} />}
@@ -81,21 +81,32 @@ export function Header() {
           }}
         />
       </div>
-      <div className="flex items-center gap-3">
+
+      <div className="flex-1" />
+
+      <div className="flex items-center gap-1">
         <Popover content={(close) => <NotificationsPanel close={close} />}>
-          <button className="relative h-10 w-10 grid place-items-center rounded-xl hover:bg-surface-soft text-ink-muted">
+          <button
+            aria-label="Notifications"
+            className="relative h-10 w-10 grid place-items-center rounded-xl hover:bg-surface-soft text-ink-muted transition-colors"
+          >
             <Icon.Bell size={20} />
-            <span className="absolute top-1.5 right-1.5 h-4 min-w-4 px-1 grid place-items-center bg-brand-500 text-white text-[10px] font-bold rounded-full">3</span>
+            <span className="absolute top-1 right-1 h-[18px] min-w-[18px] px-1 grid place-items-center bg-brand-500 text-white text-[10px] font-bold rounded-full ring-2 ring-white">
+              3
+            </span>
           </button>
         </Popover>
+
+        <span aria-hidden="true" className="h-7 w-px bg-line mx-2" />
+
         <Popover content={(close) => <ProfileMenu close={close} />}>
-          <button className="flex items-center gap-3 pl-2 pr-3 h-12 rounded-xl hover:bg-surface-soft">
-            <Avatar name={coach.name} size="md" ring />
+          <button className="flex items-center gap-2.5 pl-1.5 pr-2.5 h-11 rounded-xl hover:bg-surface-soft transition-colors">
+            <Avatar name={coach.name} size="sm" ring />
             <div className="leading-tight text-left">
               <div className="text-sm font-semibold text-ink">{coach.name}</div>
-              <div className="text-xs text-ink-muted">{coach.role}</div>
+              <div className="text-[11px] text-ink-muted">{coach.role}</div>
             </div>
-            <Icon.ChevronDown size={16} className="text-ink-muted" />
+            <Icon.ChevronDown size={14} className="text-ink-muted ml-0.5" />
           </button>
         </Popover>
       </div>
