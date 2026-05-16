@@ -1,9 +1,9 @@
 {
-  "name": "4thelab",
+  "name": "wit-basketball",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "4TheLab — Basketball tactical board and team management PWA",
+  "description": "WIT : Smart Basketball System — tactical board, plays, lineup, and team management PWA",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

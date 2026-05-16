@@ -119,7 +119,7 @@ export function LoginPage() {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="coach.kevin@4thelab.id"
+                placeholder="coach.kevin@wit.id"
                 autoComplete="email"
                 autoFocus
               />

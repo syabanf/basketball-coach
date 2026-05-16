@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { mockUsers } from '../data/mock-users.js';
 
-// LocalStorage key — bumping the prefix on schema changes is safer than migrations.
-const STORAGE_KEY = '4thelab.auth.v1';
+// LocalStorage key — bumping the suffix invalidates stale sessions on rebrand.
+const STORAGE_KEY = 'wit.auth.v2';
 
 const loadPersisted = () => {
   if (typeof window === 'undefined') return null;
@@ -57,7 +57,7 @@ export const useAuthStore = create((set) => ({
         email: normalized,
         name: 'Demo Coach',
         role: 'Head Coach',
-        team: '4TheLab Squad'
+        team: 'WIT Squad'
       };
     }
 

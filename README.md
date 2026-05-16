@@ -1,6 +1,6 @@
-# 4TheLab — Basketball Strategy System
+# WIT : Smart Basketball System
 
-A frontend-only React PWA for designing basketball plays, managing players, and centralizing tactical knowledge. Built from the [4TheLab UI / Engineering Spec](https://github.com/syabanf/basketball-coach).
+A frontend-only React PWA for designing basketball plays, managing players, scheduling training, and centralizing tactical knowledge. Built from the WIT UI / Engineering Spec. Source at [github.com/syabanf/basketball-coach](https://github.com/syabanf/basketball-coach).
 
 > Single-page app · Vite + React 18 · Tailwind (WIT.ID palette) · Zustand · React Router · vite-plugin-pwa
 

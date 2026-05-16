@@ -34,7 +34,7 @@ export function SettingsPage() {
         <Card>
           <CardHeader title="Subscription" subtitle="Current plan and billing" action={<Badge tone="brand">Pro</Badge>} />
           <ul className="space-y-2 text-sm">
-            <li className="flex justify-between"><span className="text-ink-muted">Plan</span><span className="font-semibold">4TheLab Pro</span></li>
+            <li className="flex justify-between"><span className="text-ink-muted">Plan</span><span className="font-semibold">WIT Pro</span></li>
             <li className="flex justify-between"><span className="text-ink-muted">Seats</span><span className="font-semibold">10 / 15</span></li>
             <li className="flex justify-between"><span className="text-ink-muted">Renews</span><span className="font-semibold">Sep 30, 2024</span></li>
           </ul>
@@ -49,7 +49,7 @@ export function SettingsPage() {
           <div className="space-y-3">
             <Field label="Name"  defaultValue={coach.name} />
             <Field label="Role"  defaultValue={coach.role} />
-            <Field label="Email" defaultValue="coach.kevin@4thelab.id" />
+            <Field label="Email" defaultValue="coach.kevin@wit.id" />
           </div>
           <div className="mt-4 text-right">
             <Button onClick={onSave('Profile')}>Update Profile</Button>

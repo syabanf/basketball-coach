@@ -85,7 +85,7 @@ export function Sidebar() {
           )}
         >
           <button className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-            <div className="h-8 w-8 rounded-lg bg-brand-500 grid place-items-center font-bold text-sm">4L</div>
+            <div className="h-8 w-8 rounded-lg bg-brand-500 grid place-items-center font-extrabold text-sm tracking-tight">W</div>
             <div className="flex-1 leading-tight">
               <div className="text-xs text-navy-200">Team</div>
               <div className="text-sm font-semibold">{team.name}</div>

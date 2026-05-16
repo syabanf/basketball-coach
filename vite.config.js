@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: '4TheLab — Basketball Strategy',
-        short_name: '4TheLab',
-        description: 'Digital tactical board, plays, and team management for basketball coaches.',
+        name: 'WIT : Smart Basketball System',
+        short_name: 'WIT',
+        description: 'WIT — smart basketball system: digital tactical board, plays, lineup, and team management for coaches.',
         theme_color: '#EE3C3B',
         background_color: '#111111',
         display: 'standalone',

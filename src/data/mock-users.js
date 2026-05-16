@@ -4,26 +4,26 @@
 export const mockUsers = [
   {
     id: 'usr_kevin',
-    email: 'coach.kevin@4thelab.id',
+    email: 'coach.kevin@wit.id',
     password: 'demo',
     name: 'Coach Kevin',
     role: 'Head Coach',
-    team: '4TheLab Squad'
+    team: 'WIT Squad'
   },
   {
     id: 'usr_rian',
-    email: 'rian.saputra@4thelab.id',
+    email: 'rian.saputra@wit.id',
     password: 'demo',
     name: 'Rian Saputra',
     role: 'Assistant Coach',
-    team: '4TheLab Squad'
+    team: 'WIT Squad'
   },
   {
     id: 'usr_dewi',
-    email: 'dewi.pratiwi@4thelab.id',
+    email: 'dewi.pratiwi@wit.id',
     password: 'demo',
     name: 'Dewi Pratiwi',
     role: 'Performance',
-    team: '4TheLab Squad'
+    team: 'WIT Squad'
   }
 ];

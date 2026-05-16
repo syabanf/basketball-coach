@@ -83,7 +83,7 @@ export function CourtBackground() {
       {/* Center brand */}
       <g opacity="0.45">
         <text x={W / 2} y={H - 200} textAnchor="middle" fill="#242424"
-              fontSize="42" fontWeight="800" fontFamily="Inter, sans-serif">4TheLab</text>
+              fontSize="44" fontWeight="800" fontFamily="Inter, sans-serif" letterSpacing="2">WIT</text>
       </g>
     </g>
   );

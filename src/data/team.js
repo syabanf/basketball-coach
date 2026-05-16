@@ -1,12 +1,13 @@
 export const organization = {
-  id: 'org_witlab',
-  name: '4TheLab',
-  tagline: 'Plan. Strategy. Win.'
+  id: 'org_wit',
+  name: 'WIT',
+  fullName: 'WIT : Smart Basketball System',
+  tagline: 'Smart Basketball System'
 };
 
 export const team = {
   id: 'team_01',
-  name: '4TheLab Squad',
+  name: 'WIT Squad',
   season: '2024/2025',
   city: 'Jakarta'
 };
